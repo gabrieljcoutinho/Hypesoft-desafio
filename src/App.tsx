@@ -1,4 +1,4 @@
-import { Sidebar } from './components/layout/Sidebar';
+import { Sidebar } from './components/layouts/Sidebar.tsx';
 import { SummaryCard } from './components/ui/SummaryCard';
 import { ProductTable } from './components/ui/ProductTable';
 import { Package, DollarSign, AlertTriangle, Plus } from 'lucide-react';
