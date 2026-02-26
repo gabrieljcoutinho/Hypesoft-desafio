@@ -7,6 +7,8 @@ import { Product } from '../types/product';
 export function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  // Adicionado: Estado para controlar qual produto estamos editando
+  const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
 
   const fetchProducts = async () => {
     try {
@@ -20,7 +22,7 @@ export function ProductsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string | number) => {
     if (confirm("Deseja realmente excluir este produto?")) {
       try {
         const response = await fetch(`http://localhost:5169/api/Products/${id}`, {
@@ -30,7 +32,8 @@ export function ProductsPage() {
         if (response.ok) {
           fetchProducts();
         } else {
-          alert("Erro ao excluir o produto.");
+          // Se der erro 404, mostramos um alerta detalhado
+          alert("Erro: O servidor não encontrou esse produto. Tente atualizar a página.");
         }
       } catch (error) {
         console.error("Erro ao deletar:", error);
@@ -38,9 +41,16 @@ export function ProductsPage() {
     }
   };
 
+  // Modificado: Agora abre o modal passando o produto clicado
   const handleEdit = (product: Product) => {
-    console.log("Editar produto:", product);
-    // Por enquanto abre o log. Para editar de fato, o modal precisaria receber os dados.
+    setEditingProduct(product);
+    setIsModalOpen(true);
+  };
+
+  // Adicionado: Função para garantir que o modal abra limpo para novos produtos
+  const handleAddNew = () => {
+    setEditingProduct(undefined);
+    setIsModalOpen(true);
   };
 
   useEffect(() => {
@@ -55,7 +65,7 @@ export function ProductsPage() {
           <p className="text-slate-500">Gerencie seu catálogo de produtos.</p>
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleAddNew}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2"
         >
           <Plus size={20} />
@@ -71,8 +81,10 @@ export function ProductsPage() {
 
       <ProductModal
         isOpen={isModalOpen}
+        product={editingProduct} // Enviamos o produto para o modal decidir se é PUT ou POST
         onClose={() => {
           setIsModalOpen(false);
+          setEditingProduct(undefined);
           fetchProducts();
         }}
       />
