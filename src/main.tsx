@@ -1,13 +1,20 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom' // Adicione isso
-import './index.css'
-import App from './App.tsx'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css';
+import keycloak from './services/keycloak';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </StrictMode>,
-)
+keycloak.init({
+  onLoad: 'login-required', // Isso obriga o login logo de cara
+  checkLoginIframe: false
+}).then((authenticated) => {
+  if (authenticated) {
+    ReactDOM.createRoot(document.getElementById('root')!).render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+  }
+}).catch(() => {
+  console.error("Erro ao autenticar no Keycloak");
+});
