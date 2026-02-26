@@ -38,7 +38,8 @@ export function ProductModal({ isOpen, onClose }: ProductModalProps) {
 
       if (response.ok) {
         alert('Produto salvo com sucesso na HypeStore!');
-        onClose(); // Fecha o modal após salvar
+        onClose();
+        window.location.reload(); // Recarrega a página para mostrar o novo produto na lista
       } else {
         const errorText = await response.text();
         alert('Erro ao salvar: ' + errorText);
@@ -76,6 +77,7 @@ export function ProductModal({ isOpen, onClose }: ProductModalProps) {
                 {...register('price', { valueAsNumber: true })}
                 className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none"
               />
+              {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price.message}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Estoque</label>
@@ -84,7 +86,24 @@ export function ProductModal({ isOpen, onClose }: ProductModalProps) {
                 {...register('stockQuantity', { valueAsNumber: true })}
                 className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none"
               />
+              {errors.stockQuantity && <p className="text-red-500 text-xs mt-1">{errors.stockQuantity.message}</p>}
             </div>
+          </div>
+
+          {/* NOVO CAMPO DE CATEGORIA ABAIXO */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Categoria</label>
+            <select
+              {...register('categoryId')}
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none bg-white"
+            >
+              <option value="">Selecione uma categoria...</option>
+              <option value="Periféricos">Periféricos</option>
+              <option value="Hardware">Hardware</option>
+              <option value="Calçados">Calçados</option>
+              <option value="Roupas">Roupas</option>
+            </select>
+            {errors.categoryId && <p className="text-red-500 text-xs mt-1">{errors.categoryId.message}</p>}
           </div>
 
           <div>
@@ -92,7 +111,9 @@ export function ProductModal({ isOpen, onClose }: ProductModalProps) {
             <textarea
               {...register('description')}
               className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none h-20"
+              placeholder="Descreva o produto..."
             />
+            {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
           </div>
 
           <button
