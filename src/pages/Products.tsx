@@ -22,24 +22,28 @@ export function ProductsPage() {
     }
   };
 
-  // AJUSTADO: Agora pegamos a lista de produtos baixos também
   const stats = useMemo(() => {
     const total = products.length;
     const value = products.reduce((acc, p) => acc + (p.price * p.stockQuantity), 0);
-    const lowStockItems = products.filter(p => p.stockQuantity < 10); // Lista de produtos baixos
+    const lowStockItems = products.filter(p => p.stockQuantity < 10);
 
     return {
       total,
       value,
-      lowStockCount: lowStockItems.length,
-      lowStockList: lowStockItems
+      lowStockCount: lowStockItems.length
     };
   }, [products]);
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.categoryId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // LÓGICA DE FILTRO: Se o searchTerm for "estoque_baixo", filtramos por quantidade
+  const filteredProducts = products.filter(product => {
+    if (searchTerm === 'estoque_baixo') {
+      return product.stockQuantity < 10;
+    }
+    return (
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.categoryId.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
 
   const handleDelete = async (id: string | number) => {
     if (confirm("Deseja realmente excluir este produto?")) {
@@ -71,8 +75,12 @@ export function ProductsPage() {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Card Total */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+        {/* Card Total - Clicar aqui limpa o filtro */}
+        <div
+          onClick={() => setSearchTerm('')}
+          className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
+          title="Clique para ver todos os produtos"
+        >
           <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Package size={24} /></div>
           <div>
             <p className="text-sm text-slate-500 font-medium">Total de Produtos</p>
@@ -91,35 +99,32 @@ export function ProductsPage() {
           </div>
         </div>
 
-        {/* CARD DE ALERTA AJUSTADO */}
-        <div className="group relative bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-          <div className="p-3 bg-red-50 text-red-600 rounded-xl"><AlertTriangle size={24} /></div>
+        {/* CARD DE ALERTA COM ONCLICK */}
+        <div
+          onClick={() => setSearchTerm('estoque_baixo')}
+          className="bg-white p-6 rounded-2xl shadow-sm border border-red-100 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors group"
+          title="Clique para ver produtos com estoque baixo"
+        >
+          <div className="p-3 bg-red-50 text-red-600 rounded-xl group-hover:bg-red-600 group-hover:text-white transition-colors">
+            <AlertTriangle size={24} />
+          </div>
           <div>
             <p className="text-sm text-slate-500 font-medium">Estoque Baixo</p>
-            <p className="text-2xl font-bold text-slate-800">{stats.lowStockCount}</p>
+            <p className="text-2xl font-bold text-red-600">{stats.lowStockCount}</p>
           </div>
-
-          {/* LISTA FLUTUANTE AO PASSAR O MOUSE (Tooltip) */}
-          {stats.lowStockCount > 0 && (
-            <div className="absolute top-full left-0 mt-2 w-64 bg-slate-800 text-white text-xs rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-xl pointer-events-none">
-              <p className="font-bold mb-2 border-b border-slate-600 pb-1 text-red-400">Itens Críticos:</p>
-              <ul className="space-y-1">
-                {stats.lowStockList.map(item => (
-                  <li key={item.id} className="flex justify-between">
-                    <span>{item.name}</span>
-                    <span className="font-bold text-red-300">{item.stockQuantity} un</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
       </div>
 
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-slate-800">Produtos</h2>
-          <p className="text-slate-500">Gerencie seu catálogo de produtos.</p>
+          <h2 className="text-3xl font-bold text-slate-800">
+            {searchTerm === 'estoque_baixo' ? 'Produtos com Estoque Baixo' : 'Produtos'}
+          </h2>
+          <p className="text-slate-500">
+            {searchTerm === 'estoque_baixo'
+              ? 'Exibindo apenas itens com menos de 10 unidades.'
+              : 'Gerencie seu catálogo de produtos.'}
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -129,7 +134,7 @@ export function ProductsPage() {
               type="text"
               placeholder="Pesquisar produtos..."
               className="pl-10 pr-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 w-64"
-              value={searchTerm}
+              value={searchTerm === 'estoque_baixo' ? '' : searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
@@ -142,6 +147,16 @@ export function ProductsPage() {
           </button>
         </div>
       </header>
+
+      {/* Botão para limpar filtro se estiver em modo estoque baixo */}
+      {searchTerm === 'estoque_baixo' && (
+        <button
+          onClick={() => setSearchTerm('')}
+          className="text-sm text-blue-600 hover:underline mb-4"
+        >
+          ← Voltar para todos os produtos
+        </button>
+      )}
 
       <ProductTable
         products={filteredProducts}
