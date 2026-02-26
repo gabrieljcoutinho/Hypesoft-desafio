@@ -1,8 +1,9 @@
+import { useState } from 'react'; // Adicionado
 import { Plus } from 'lucide-react';
 import { ProductTable } from '../components/ui/ProductTable';
+import { ProductModal } from '../components/ui/ProductModal'; // Adicionado
 import { Product } from '../types/product';
 
-// Mova os dados fictícios para cá
 const MOCK_PRODUCTS: Product[] = [
   {
     id: '1',
@@ -16,6 +17,8 @@ const MOCK_PRODUCTS: Product[] = [
 ];
 
 export function ProductsPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false); // Adicionado
+
   return (
     <div>
       <header className="flex items-center justify-between mb-8">
@@ -24,13 +27,22 @@ export function ProductsPage() {
           <p className="text-slate-500">Gerencie seu catálogo de produtos.</p>
         </div>
 
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+        <button
+          onClick={() => setIsModalOpen(true)} // Adicionado
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2"
+        >
           <Plus size={20} />
           Novo Produto
         </button>
       </header>
 
       <ProductTable products={MOCK_PRODUCTS} />
+
+      {/* Adicionado o Modal no final */}
+      <ProductModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }
