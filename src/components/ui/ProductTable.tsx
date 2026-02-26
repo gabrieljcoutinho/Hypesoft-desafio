@@ -1,5 +1,5 @@
 import { Edit, Trash2 } from 'lucide-react';
-import { Product } from '../../types/product';
+import { Product } from '../../types/product.ts';
 
 interface ProductTableProps {
   products: Product[];
