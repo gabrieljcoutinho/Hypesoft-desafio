@@ -26,10 +26,27 @@ export function ProductModal({ isOpen, onClose }: ProductModalProps) {
 
   if (!isOpen) return null;
 
-  const onSubmit = (data: ProductFormData) => {
-    console.log('Dados prontos para o C#:', data);
-    alert('Produto validado com sucesso!');
-    onClose();
+  const onSubmit = async (data: ProductFormData) => {
+    try {
+      const response = await fetch('http://localhost:5169/api/Products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        alert('Produto salvo com sucesso na HypeStore!');
+        onClose(); // Fecha o modal após salvar
+      } else {
+        const errorText = await response.text();
+        alert('Erro ao salvar: ' + errorText);
+      }
+    } catch (error) {
+      console.error('Erro de conexão:', error);
+      alert('Não foi possível conectar ao servidor C#. Verifique se o Visual Studio está rodando!');
+    }
   };
 
   return (
