@@ -1,12 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, Package, DollarSign, AlertTriangle, X, Info, PieChart as ChartIcon } from 'lucide-react';
+import { Plus, Search, Package, DollarSign, AlertTriangle, X, Info, ChartPie } from 'lucide-react';
 import {
   PieChart,
   Pie,
   Cell,
   ResponsiveContainer,
-  Tooltip,
-  Legend
+  Tooltip
 } from 'recharts';
 import { ProductTable } from '../components/ui/ProductTable';
 import { ProductModal } from '../components/ui/ProductModal';
@@ -36,7 +35,6 @@ export function ProductsPage() {
     const value = products.reduce((acc, p) => acc + (p.price * p.stockQuantity), 0);
     const lowStockItems = products.filter(p => p.stockQuantity < 10);
 
-    // LÓGICA DO GRÁFICO: Agrupa a quantidade de produtos por nome de categoria
     const categoryGroups = products.reduce((acc: Record<string, number>, p) => {
       acc[p.categoryId] = (acc[p.categoryId] || 0) + 1;
       return acc;
@@ -47,17 +45,11 @@ export function ProductsPage() {
       value: categoryGroups[cat]
     }));
 
-    return {
-      total,
-      value,
-      lowStockCount: lowStockItems.length,
-      lowStockList: lowStockItems,
-      chartData
-    };
+    return { total, value, lowStockCount: lowStockItems.length, lowStockList: lowStockItems, chartData };
   }, [products]);
 
-  // Cores suaves e modernas para o gráfico
-  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1'];
+  // Paleta de cores vibrantes e modernas
+  const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981'];
 
   const filteredProducts = products.filter(product => {
     if (searchTerm === 'estoque_baixo') return product.stockQuantity < 10;
@@ -70,13 +62,9 @@ export function ProductsPage() {
   const handleDelete = async (id: string | number) => {
     if (confirm("Deseja realmente excluir este produto?")) {
       try {
-        const response = await fetch(`http://localhost:5169/api/Products/${id}`, {
-          method: 'DELETE',
-        });
+        const response = await fetch(`http://localhost:5169/api/Products/${id}`, { method: 'DELETE' });
         if (response.ok) fetchProducts();
-      } catch (error) {
-        console.error("Erro ao deletar:", error);
-      }
+      } catch (error) { console.error("Erro ao deletar:", error); }
     }
   };
 
@@ -85,183 +73,174 @@ export function ProductsPage() {
     setIsModalOpen(true);
   };
 
-  const handleAddNew = () => {
-    setEditingProduct(undefined);
-    setIsModalOpen(true);
-  };
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  useEffect(() => { fetchProducts(); }, []);
 
   return (
     <div className="space-y-8 relative pb-10">
       {/* 1. CARDS DE RESUMO */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div
-          onClick={() => setSearchTerm('')}
-          className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
-          title="Clique para ver todos os produtos"
-        >
-          <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Package size={24} /></div>
+        <div onClick={() => setSearchTerm('')} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 cursor-pointer hover:shadow-md transition-all">
+          <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl"><Package size={24} /></div>
           <div>
-            <p className="text-sm text-slate-500 font-medium">Total de Produtos</p>
-            <p className="text-2xl font-bold text-slate-800">{stats.total}</p>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total</p>
+            <p className="text-3xl font-black text-slate-800">{stats.total}</p>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-          <div className="p-3 bg-green-50 text-green-600 rounded-xl"><DollarSign size={24} /></div>
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-all">
+          <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl"><DollarSign size={24} /></div>
           <div>
-            <p className="text-sm text-slate-500 font-medium">Valor do Estoque</p>
-            <p className="text-2xl font-bold text-slate-800">
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Valor em Stock</p>
+            <p className="text-3xl font-black text-slate-800">
               {stats.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
             </p>
           </div>
         </div>
 
-        <div
-          onClick={() => setIsLowStockModalOpen(true)}
-          className="bg-white p-6 rounded-2xl shadow-sm border border-amber-100 flex items-center gap-4 cursor-pointer hover:bg-amber-50 transition-colors group"
-        >
-          <div className="p-3 bg-amber-50 text-amber-600 rounded-xl group-hover:bg-amber-100 transition-colors">
+        <div onClick={() => setIsLowStockModalOpen(true)} className="bg-white p-6 rounded-3xl shadow-sm border border-rose-100 flex items-center gap-4 cursor-pointer hover:bg-rose-50 transition-all group">
+          <div className="p-4 bg-rose-50 text-rose-600 rounded-2xl group-hover:bg-rose-600 group-hover:text-white transition-colors">
             <AlertTriangle size={24} />
           </div>
           <div>
-            <p className="text-sm text-slate-500 font-medium">Estoque Baixo</p>
-            <p className="text-2xl font-bold text-amber-700">{stats.lowStockCount}</p>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Crítico</p>
+            <p className="text-3xl font-black text-rose-600">{stats.lowStockCount}</p>
           </div>
         </div>
       </div>
 
-      {/* 2. GRÁFICO DE CATEGORIAS (NOVO REQUISITO) */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <div className="flex items-center gap-2 mb-6">
-          <ChartIcon size={20} className="text-slate-400" />
-          <h3 className="text-lg font-bold text-slate-800">Produtos por Categoria</h3>
+      {/* 2. DASHBOARD DE MIX DE CATEGORIAS (REESTILIZADO) */}
+      <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="p-2 bg-slate-100 rounded-lg text-slate-600"><ChartPie size={20} /></div>
+          <h3 className="text-xl font-bold text-slate-800 tracking-tight">Análise de Mix por Categoria</h3>
         </div>
-        <div className="h-72 w-full">
-          {stats.chartData.length > 0 ? (
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Lado Esquerdo: O Gráfico Donut */}
+          <div className="h-72 w-full relative">
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-4xl font-black text-slate-800 leading-none">{stats.total}</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Total Itens</span>
+            </div>
+
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={stats.chartData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={90}
-                  paddingAngle={5}
+                  innerRadius={80}
+                  outerRadius={105}
+                  stroke="none"
+                  paddingAngle={8}
                   dataKey="value"
+                  cornerRadius={10}
                 >
                   {stats.chartData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                      className="hover:opacity-80 transition-opacity cursor-pointer outline-none"
+                    />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-white p-3 shadow-xl rounded-2xl border border-slate-100">
+                          <p className="text-sm font-bold text-slate-800">{payload[0].name}</p>
+                          <p className="text-xs text-indigo-600 font-black">{payload[0].value} Produtos</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
                 />
-                <Legend iconType="circle" layout="vertical" align="right" verticalAlign="middle" />
               </PieChart>
             </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-full text-slate-400">
-              Nenhum dado para exibir no gráfico
+          </div>
+
+          {/* Lado Direito: Legenda Customizada */}
+          <div className="space-y-3">
+            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4">Distribuição</p>
+            <div className="grid grid-cols-2 gap-3">
+              {stats.chartData.map((entry, index) => (
+                <div key={entry.name} className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-sm transition-all group">
+                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-bold text-slate-700 truncate">{entry.name}</span>
+                    <span className="text-[11px] text-slate-400 font-bold">{entry.value} itens</span>
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
       {/* 3. LISTAGEM E FILTROS */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-4">
         <div>
-          <h2 className="text-3xl font-bold text-slate-800">
-            {searchTerm === 'estoque_baixo' ? 'Estoque Crítico' : 'Produtos'}
+          <h2 className="text-3xl font-black text-slate-800 tracking-tight">
+            {searchTerm === 'estoque_baixo' ? 'Atenção ao Stock' : 'Inventário Geral'}
           </h2>
-          <p className="text-slate-500">
-            {searchTerm === 'estoque_baixo'
-              ? 'Itens que precisam de reposição imediata.'
-              : 'Gerencie seu catálogo completo.'}
-          </p>
+          <div className="flex items-center gap-2 text-slate-500 mt-1">
+            <div className={`w-2 h-2 rounded-full ${searchTerm === 'estoque_baixo' ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`} />
+            <p className="text-sm font-medium">Status: {searchTerm === 'estoque_baixo' ? 'Mostrando críticos' : 'Em conformidade'}</p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+        <div className="flex items-center gap-4">
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={20} />
             <input
               type="text"
-              placeholder="Pesquisar..."
-              className="pl-10 pr-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 w-64"
+              placeholder="Pesquisar catálogo..."
+              className="pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 w-80 shadow-sm transition-all"
               value={searchTerm === 'estoque_baixo' ? '' : searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-
-          <button
-            onClick={handleAddNew}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-          >
-            <Plus size={20} /> Novo Produto
+          <button onClick={() => { setEditingProduct(undefined); setIsModalOpen(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-indigo-200 transition-all active:scale-95">
+            <Plus size={22} /> Novo Item
           </button>
         </div>
       </header>
 
-      {searchTerm === 'estoque_baixo' && (
-        <button
-          onClick={() => setSearchTerm('')}
-          className="text-sm text-blue-600 hover:underline mb-4 flex items-center gap-1"
-        >
-          ← Voltar para todos os produtos
-        </button>
-      )}
+      <ProductTable products={filteredProducts} onDelete={handleDelete} onEdit={handleEdit} />
 
-      <ProductTable
-        products={filteredProducts}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
-      />
-
-      {/* TELA SOBRE TUDO (MODAL DE ESTOQUE BAIXO) */}
+      {/* MODAL DE ESTOQUE BAIXO */}
       {isLowStockModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in slide-in-from-bottom-10 duration-500">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl border border-amber-100">
-                    <AlertTriangle size={24} />
-                </div>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[70] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[40px] shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in duration-300">
+            <div className="p-8 bg-gradient-to-br from-rose-500 to-rose-600 flex justify-between items-center text-white">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm"><AlertTriangle size={32} /></div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">Estoque Crítico</h3>
-                  <p className="text-slate-500 text-sm">Menos de 10 unidades disponíveis</p>
+                  <h3 className="text-2xl font-black italic tracking-tight">ALERTA CRÍTICO</h3>
+                  <p className="opacity-80 font-medium text-sm tracking-wide">Reposição imediata necessária</p>
                 </div>
               </div>
-              <button onClick={() => setIsLowStockModalOpen(false)} className="hover:bg-slate-200 p-2 rounded-full transition-colors text-slate-400">
-                <X size={22} />
-              </button>
+              <button onClick={() => setIsLowStockModalOpen(false)} className="bg-black/10 hover:bg-black/20 p-3 rounded-full transition-colors"><X size={24} /></button>
             </div>
-            <div className="p-6">
-              <div className="flex items-center gap-3 p-4 mb-6 bg-blue-50 rounded-xl border border-blue-100 text-blue-700 text-sm">
-                <Info size={18} className="flex-shrink-0" />
-                <p>Reponha estes itens para evitar perda de vendas.</p>
-              </div>
-              <div className="space-y-3 max-h-[380px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="p-8">
+              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-4 custom-scrollbar">
                 {stats.lowStockList.map(product => (
-                  <div key={product.id} className="flex justify-between items-center p-5 bg-white rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors">
+                  <div key={product.id} className="flex justify-between items-center p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-rose-200 transition-all">
                     <div>
-                      <p className="font-semibold text-slate-900">{product.name}</p>
-                      <span className="text-xs text-slate-500 px-2 py-0.5 bg-slate-100 rounded-md">{product.categoryId}</span>
+                      <p className="font-bold text-slate-900 text-lg leading-tight">{product.name}</p>
+                      <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{product.categoryId}</span>
                     </div>
-                    <div className="flex items-baseline gap-1 p-2 px-3 bg-red-50 rounded-lg text-red-700 border border-red-100">
-                      <span className="text-2xl font-bold">{product.stockQuantity}</span>
-                      <span className="text-[10px] font-bold uppercase tracking-tighter">un</span>
+                    <div className="text-center bg-rose-100 px-5 py-2 rounded-2xl border border-rose-200 min-w-[80px]">
+                      <span className="block text-2xl font-black text-rose-600">{product.stockQuantity}</span>
+                      <span className="text-[9px] font-black text-rose-400 uppercase tracking-tighter">Qtd</span>
                     </div>
                   </div>
                 ))}
               </div>
-              <button
-                onClick={() => { setSearchTerm('estoque_baixo'); setIsLowStockModalOpen(false); }}
-                className="w-full mt-8 bg-blue-600 text-white py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-all"
-              >
-                Gerenciar na Tabela
+              <button onClick={() => { setSearchTerm('estoque_baixo'); setIsLowStockModalOpen(false); }} className="w-full mt-8 bg-slate-900 text-white py-5 rounded-[24px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl active:scale-95">
+                Ver detalhes na tabela
               </button>
             </div>
           </div>
