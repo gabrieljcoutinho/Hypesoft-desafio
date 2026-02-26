@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
-import { Sidebar } from './layouts/Sidebar';
+import { Sidebar } from './components/layouts/Sidebar.tsx';
 import { ProductsPage } from './pages/Products';
 
 // Crie um componente simples para o Dashboard aqui ou em outro arquivo
