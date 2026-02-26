@@ -1,5 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, Package, DollarSign, AlertTriangle, X, Info } from 'lucide-react'; // Adicionado Info
+import { Plus, Search, Package, DollarSign, AlertTriangle, X, Info, PieChart as ChartIcon } from 'lucide-react';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend
+} from 'recharts';
 import { ProductTable } from '../components/ui/ProductTable';
 import { ProductModal } from '../components/ui/ProductModal';
 import { Product } from '../types/product';
@@ -9,8 +17,6 @@ export function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Estado para controlar a "tela sobre tudo" do estoque baixo
   const [isLowStockModalOpen, setIsLowStockModalOpen] = useState(false);
 
   const fetchProducts = async () => {
@@ -30,18 +36,31 @@ export function ProductsPage() {
     const value = products.reduce((acc, p) => acc + (p.price * p.stockQuantity), 0);
     const lowStockItems = products.filter(p => p.stockQuantity < 10);
 
+    // LÓGICA DO GRÁFICO: Agrupa a quantidade de produtos por nome de categoria
+    const categoryGroups = products.reduce((acc: Record<string, number>, p) => {
+      acc[p.categoryId] = (acc[p.categoryId] || 0) + 1;
+      return acc;
+    }, {});
+
+    const chartData = Object.keys(categoryGroups).map(cat => ({
+      name: cat,
+      value: categoryGroups[cat]
+    }));
+
     return {
       total,
       value,
       lowStockCount: lowStockItems.length,
-      lowStockList: lowStockItems // Guardamos a lista para mostrar no modal
+      lowStockList: lowStockItems,
+      chartData
     };
   }, [products]);
 
+  // Cores suaves e modernas para o gráfico
+  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1'];
+
   const filteredProducts = products.filter(product => {
-    if (searchTerm === 'estoque_baixo') {
-      return product.stockQuantity < 10;
-    }
+    if (searchTerm === 'estoque_baixo') return product.stockQuantity < 10;
     return (
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.categoryId.toLowerCase().includes(searchTerm.toLowerCase())
@@ -76,11 +95,12 @@ export function ProductsPage() {
   }, []);
 
   return (
-    <div className="space-y-8 relative">
+    <div className="space-y-8 relative pb-10">
+      {/* 1. CARDS DE RESUMO */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div
           onClick={() => setSearchTerm('')}
-          className="bg-white p-6 rounded-2xl shadow-sm border border-slate-Slate-100 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
+          className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
           title="Clique para ver todos os produtos"
         >
           <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Package size={24} /></div>
@@ -100,11 +120,9 @@ export function ProductsPage() {
           </div>
         </div>
 
-        {/* CARD DE ALERTA - Suavizado */}
         <div
           onClick={() => setIsLowStockModalOpen(true)}
           className="bg-white p-6 rounded-2xl shadow-sm border border-amber-100 flex items-center gap-4 cursor-pointer hover:bg-amber-50 transition-colors group"
-          title="Clique para ver quais produtos estão com estoque baixo"
         >
           <div className="p-3 bg-amber-50 text-amber-600 rounded-xl group-hover:bg-amber-100 transition-colors">
             <AlertTriangle size={24} />
@@ -116,84 +134,53 @@ export function ProductsPage() {
         </div>
       </div>
 
-      {/* TELA SOBRE TUDO (MODAL DE ESTOQUE BAIXO) - DESIGN REFINADO E SUAVE */}
-      {isLowStockModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in slide-in-from-bottom-10 duration-500 ease-out">
-            {/* Cabeçalho mais elegante e suave */}
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl border border-amber-100">
-                    <AlertTriangle size={24} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900">Relatório de Estoque Crítico</h3>
-                  <p className="text-slate-500 text-sm">Produtos com menos de 10 unidades em stock</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsLowStockModalOpen(false)}
-                className="hover:bg-slate-200 p-2 rounded-full transition-colors text-slate-400 hover:text-slate-600"
-              >
-                <X size={22} />
-              </button>
-            </div>
-
-            <div className="p-6">
-              {/* Info box suave */}
-              <div className="flex items-center gap-3 p-4 mb-6 bg-blue-50 rounded-xl border border-blue-100 text-blue-700 text-sm">
-                <Info size={18} className="flex-shrink-0" />
-                <p>Estes itens requerem reposição urgente para evitar ruturas de stock.</p>
-              </div>
-
-              {/* Lista com design mais limpo e espaçamento melhor */}
-              <div className="space-y-3 max-h-[380px] overflow-y-auto pr-2 custom-scrollbar">
-                {stats.lowStockList.length > 0 ? (
-                  stats.lowStockList.map(product => (
-                    <div key={product.id} className="flex justify-between items-center p-5 bg-white rounded-xl border border-slate-100 hover:border-blue-100 hover:bg-slate-50 transition-colors group">
-                      <div className="flex flex-col gap-0.5">
-                        <p className="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">{product.name}</p>
-                        <span className="text-xs text-slate-500 px-2.5 py-1 bg-slate-100 rounded-full w-fit">{product.categoryId}</span>
-                      </div>
-                      <div className="flex items-end gap-1.5 p-3 px-4 bg-red-50 rounded-xl border border-red-100 text-red-700">
-                        <span className="text-3xl font-extrabold leading-none">{product.stockQuantity}</span>
-                        <span className="text-xs font-medium uppercase tracking-wider pb-0.5">unid.</span>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center text-slate-500 py-12 bg-slate-50 rounded-xl border border-slate-100">
-                    <Package size={40} className="mx-auto mb-4 text-slate-300" />
-                    <p className="font-medium text-slate-600">Excelente! 🎉</p>
-                    <p className="text-sm">Nenhum produto com estoque crítico no momento.</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Botão de ação principal suave mas visível */}
-              <button
-                onClick={() => {
-                  setSearchTerm('estoque_baixo');
-                  setIsLowStockModalOpen(false);
-                }}
-                className="w-full mt-8 bg-blue-600 text-white py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-md shadow-blue-100 active:scale-[0.98] text-center"
-              >
-                Visualizar todos na tabela de produtos
-              </button>
-            </div>
-          </div>
+      {/* 2. GRÁFICO DE CATEGORIAS (NOVO REQUISITO) */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <div className="flex items-center gap-2 mb-6">
+          <ChartIcon size={20} className="text-slate-400" />
+          <h3 className="text-lg font-bold text-slate-800">Produtos por Categoria</h3>
         </div>
-      )}
+        <div className="h-72 w-full">
+          {stats.chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={stats.chartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={90}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {stats.chartData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                />
+                <Legend iconType="circle" layout="vertical" align="right" verticalAlign="middle" />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full text-slate-400">
+              Nenhum dado para exibir no gráfico
+            </div>
+          )}
+        </div>
+      </div>
 
+      {/* 3. LISTAGEM E FILTROS */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold text-slate-800">
-            {searchTerm === 'estoque_baixo' ? 'Produtos com Estoque Baixo' : 'Produtos'}
+            {searchTerm === 'estoque_baixo' ? 'Estoque Crítico' : 'Produtos'}
           </h2>
           <p className="text-slate-500">
             {searchTerm === 'estoque_baixo'
-              ? 'Exibindo apenas itens com menos de 10 unidades.'
-              : 'Gerencie seu catálogo de produtos.'}
+              ? 'Itens que precisam de reposição imediata.'
+              : 'Gerencie seu catálogo completo.'}
           </p>
         </div>
 
@@ -202,7 +189,7 @@ export function ProductsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
               type="text"
-              placeholder="Pesquisar produtos..."
+              placeholder="Pesquisar..."
               className="pl-10 pr-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 w-64"
               value={searchTerm === 'estoque_baixo' ? '' : searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -232,6 +219,54 @@ export function ProductsPage() {
         onDelete={handleDelete}
         onEdit={handleEdit}
       />
+
+      {/* TELA SOBRE TUDO (MODAL DE ESTOQUE BAIXO) */}
+      {isLowStockModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in slide-in-from-bottom-10 duration-500">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl border border-amber-100">
+                    <AlertTriangle size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">Estoque Crítico</h3>
+                  <p className="text-slate-500 text-sm">Menos de 10 unidades disponíveis</p>
+                </div>
+              </div>
+              <button onClick={() => setIsLowStockModalOpen(false)} className="hover:bg-slate-200 p-2 rounded-full transition-colors text-slate-400">
+                <X size={22} />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="flex items-center gap-3 p-4 mb-6 bg-blue-50 rounded-xl border border-blue-100 text-blue-700 text-sm">
+                <Info size={18} className="flex-shrink-0" />
+                <p>Reponha estes itens para evitar perda de vendas.</p>
+              </div>
+              <div className="space-y-3 max-h-[380px] overflow-y-auto pr-2 custom-scrollbar">
+                {stats.lowStockList.map(product => (
+                  <div key={product.id} className="flex justify-between items-center p-5 bg-white rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors">
+                    <div>
+                      <p className="font-semibold text-slate-900">{product.name}</p>
+                      <span className="text-xs text-slate-500 px-2 py-0.5 bg-slate-100 rounded-md">{product.categoryId}</span>
+                    </div>
+                    <div className="flex items-baseline gap-1 p-2 px-3 bg-red-50 rounded-lg text-red-700 border border-red-100">
+                      <span className="text-2xl font-bold">{product.stockQuantity}</span>
+                      <span className="text-[10px] font-bold uppercase tracking-tighter">un</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => { setSearchTerm('estoque_baixo'); setIsLowStockModalOpen(false); }}
+                className="w-full mt-8 bg-blue-600 text-white py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-all"
+              >
+                Gerenciar na Tabela
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ProductModal
         isOpen={isModalOpen}
