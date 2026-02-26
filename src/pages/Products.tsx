@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, Package, DollarSign, AlertTriangle, X } from 'lucide-react'; // Adicionado X para fechar
+import { Plus, Search, Package, DollarSign, AlertTriangle, X, Info } from 'lucide-react'; // Adicionado Info
 import { ProductTable } from '../components/ui/ProductTable';
 import { ProductModal } from '../components/ui/ProductModal';
 import { Product } from '../types/product';
@@ -10,7 +10,7 @@ export function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // NOVO: Estado para controlar a "tela sobre tudo" do estoque baixo
+  // Estado para controlar a "tela sobre tudo" do estoque baixo
   const [isLowStockModalOpen, setIsLowStockModalOpen] = useState(false);
 
   const fetchProducts = async () => {
@@ -80,7 +80,7 @@ export function ProductsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div
           onClick={() => setSearchTerm('')}
-          className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
+          className="bg-white p-6 rounded-2xl shadow-sm border border-slate-Slate-100 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
           title="Clique para ver todos os produtos"
         >
           <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Package size={24} /></div>
@@ -100,70 +100,85 @@ export function ProductsPage() {
           </div>
         </div>
 
-        {/* MODIFICADO: Agora abre o Modal de Detalhes */}
+        {/* CARD DE ALERTA - Suavizado */}
         <div
           onClick={() => setIsLowStockModalOpen(true)}
-          className="bg-white p-6 rounded-2xl shadow-sm border border-red-100 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors group"
+          className="bg-white p-6 rounded-2xl shadow-sm border border-amber-100 flex items-center gap-4 cursor-pointer hover:bg-amber-50 transition-colors group"
           title="Clique para ver quais produtos estão com estoque baixo"
         >
-          <div className="p-3 bg-red-50 text-red-600 rounded-xl group-hover:bg-red-600 group-hover:text-white transition-colors">
+          <div className="p-3 bg-amber-50 text-amber-600 rounded-xl group-hover:bg-amber-100 transition-colors">
             <AlertTriangle size={24} />
           </div>
           <div>
             <p className="text-sm text-slate-500 font-medium">Estoque Baixo</p>
-            <p className="text-2xl font-bold text-red-600">{stats.lowStockCount}</p>
+            <p className="text-2xl font-bold text-amber-700">{stats.lowStockCount}</p>
           </div>
         </div>
       </div>
 
-      {/* TELA SOBRE TUDO (MODAL DE ESTOQUE BAIXO) */}
+      {/* TELA SOBRE TUDO (MODAL DE ESTOQUE BAIXO) - DESIGN REFINADO E SUAVE */}
       {isLowStockModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="bg-red-600 p-6 flex justify-between items-center text-white">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in slide-in-from-bottom-10 duration-500 ease-out">
+            {/* Cabeçalho mais elegante e suave */}
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <div className="flex items-center gap-3">
-                <AlertTriangle size={28} />
+                <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl border border-amber-100">
+                    <AlertTriangle size={24} />
+                </div>
                 <div>
-                  <h3 className="text-xl font-bold">Atenção!</h3>
-                  <p className="text-red-100 text-xs">Itens com menos de 10 unidades</p>
+                  <h3 className="text-xl font-bold text-slate-900">Relatório de Estoque Crítico</h3>
+                  <p className="text-slate-500 text-sm">Produtos com menos de 10 unidades em stock</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsLowStockModalOpen(false)}
-                className="hover:bg-white/20 p-2 rounded-full transition-colors"
+                className="hover:bg-slate-200 p-2 rounded-full transition-colors text-slate-400 hover:text-slate-600"
               >
-                <X size={24} />
+                <X size={22} />
               </button>
             </div>
 
             <div className="p-6">
-              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              {/* Info box suave */}
+              <div className="flex items-center gap-3 p-4 mb-6 bg-blue-50 rounded-xl border border-blue-100 text-blue-700 text-sm">
+                <Info size={18} className="flex-shrink-0" />
+                <p>Estes itens requerem reposição urgente para evitar ruturas de stock.</p>
+              </div>
+
+              {/* Lista com design mais limpo e espaçamento melhor */}
+              <div className="space-y-3 max-h-[380px] overflow-y-auto pr-2 custom-scrollbar">
                 {stats.lowStockList.length > 0 ? (
                   stats.lowStockList.map(product => (
-                    <div key={product.id} className="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-red-200 transition-colors">
-                      <div>
-                        <p className="font-bold text-slate-800">{product.name}</p>
-                        <p className="text-xs text-slate-500">{product.categoryId}</p>
+                    <div key={product.id} className="flex justify-between items-center p-5 bg-white rounded-xl border border-slate-100 hover:border-blue-100 hover:bg-slate-50 transition-colors group">
+                      <div className="flex flex-col gap-0.5">
+                        <p className="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">{product.name}</p>
+                        <span className="text-xs text-slate-500 px-2.5 py-1 bg-slate-100 rounded-full w-fit">{product.categoryId}</span>
                       </div>
-                      <div className="text-right">
-                        <span className="text-red-600 font-black text-lg">{product.stockQuantity}</span>
-                        <span className="text-[10px] text-slate-400 block uppercase font-bold">unidades</span>
+                      <div className="flex items-end gap-1.5 p-3 px-4 bg-red-50 rounded-xl border border-red-100 text-red-700">
+                        <span className="text-3xl font-extrabold leading-none">{product.stockQuantity}</span>
+                        <span className="text-xs font-medium uppercase tracking-wider pb-0.5">unid.</span>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-center text-slate-500 py-8">Nenhum produto com estoque baixo! 🎉</p>
+                  <div className="text-center text-slate-500 py-12 bg-slate-50 rounded-xl border border-slate-100">
+                    <Package size={40} className="mx-auto mb-4 text-slate-300" />
+                    <p className="font-medium text-slate-600">Excelente! 🎉</p>
+                    <p className="text-sm">Nenhum produto com estoque crítico no momento.</p>
+                  </div>
                 )}
               </div>
 
+              {/* Botão de ação principal suave mas visível */}
               <button
                 onClick={() => {
                   setSearchTerm('estoque_baixo');
                   setIsLowStockModalOpen(false);
                 }}
-                className="w-full mt-6 bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200 active:scale-[0.98]"
+                className="w-full mt-8 bg-blue-600 text-white py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-md shadow-blue-100 active:scale-[0.98] text-center"
               >
-                Ver todos na tabela detalhada
+                Visualizar todos na tabela de produtos
               </button>
             </div>
           </div>
