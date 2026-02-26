@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
-import { Product } from '../../types/product';
+import { Product } from '../../types/productType';
 
 const productSchema = z.object({
   name: z.string().min(3, 'O nome deve ter pelo menos 3 letras'),
