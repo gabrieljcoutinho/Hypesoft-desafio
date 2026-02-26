@@ -1,4 +1,5 @@
 import { LayoutDashboard, Package, Tags, Box, LogOut } from 'lucide-react';
+import keycloak from '../../services/keycloak'; // Certifique-se que o caminho está correto
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -8,6 +9,11 @@ const menuItems = [
 ];
 
 export function Sidebar() {
+  // Função para deslogar
+  const handleLogout = () => {
+    keycloak.logout();
+  };
+
   return (
     <aside className="w-64 bg-white h-screen border-r border-slate-200 flex flex-col">
       <div className="p-6">
@@ -31,7 +37,11 @@ export function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-slate-100">
-        <button className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 w-full rounded-lg transition-colors">
+        {/* Adicionado o onClick aqui */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 w-full rounded-lg transition-colors"
+        >
           <LogOut size={20} />
           <span className="font-medium">Sair</span>
         </button>
