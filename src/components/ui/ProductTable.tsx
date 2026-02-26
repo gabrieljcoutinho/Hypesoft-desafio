@@ -1,59 +1,53 @@
-import { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
-// Removi um ".." dos caminhos abaixo para eles apontarem para o lugar certo
-import { ProductTable } from '../components/ui/ProductTable';
-import { ProductModal } from '../components/ui/ProductModal';
-import { Product } from '../types/product';
-export function ProductsPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  // Criamos um estado para os produtos reais (começa vazio)
-  const [products, setProducts] = useState<Product[]>([]);
+import { Edit, Trash2 } from 'lucide-react';
+import { Product } from '../../types/product';
 
-  // Função que vai lá no C# buscar os dados
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch('http://localhost:5169/api/Products');
-      if (response.ok) {
-        const data = await response.json();
-        setProducts(data); // Coloca os dados do C# na tela
-      }
-    } catch (error) {
-      console.error("Erro ao carregar produtos do Backend:", error);
-    }
-  };
+interface ProductTableProps {
+  products: Product[];
+}
 
-  // Isso executa a busca assim que a página abre
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
+export function ProductTable({ products }: ProductTableProps) {
   return (
-    <div>
-      <header className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="text-3xl font-bold text-slate-800">Produtos</h2>
-          <p className="text-slate-500">Gerencie seu catálogo de produtos.</p>
-        </div>
-
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2"
-        >
-          <Plus size={20} />
-          Novo Produto
-        </button>
-      </header>
-
-      {/* Trocamos MOCK_PRODUCTS pela nossa variável real 'products' */}
-      <ProductTable products={products} />
-
-      <ProductModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          fetchProducts(); // Atualiza a lista automaticamente após fechar o modal
-        }}
-      />
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <table className="w-full text-left border-collapse">
+        <thead className="bg-slate-50 border-b border-slate-200">
+          <tr>
+            <th className="py-4 px-6 text-sm font-semibold text-slate-600">Produto</th>
+            <th className="py-4 px-6 text-sm font-semibold text-slate-600">Categoria</th>
+            <th className="py-4 px-6 text-sm font-semibold text-slate-600">Preço</th>
+            <th className="py-4 px-6 text-sm font-semibold text-slate-600">Estoque</th>
+            <th className="py-4 px-6 text-sm font-semibold text-slate-600 text-right">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.map((product) => (
+            <tr key={product.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+              <td className="py-4 px-6">
+                <div className="font-medium text-slate-800">{product.name}</div>
+                <div className="text-xs text-slate-500">{product.description}</div>
+              </td>
+              <td className="py-4 px-6">
+                <span className="bg-blue-50 text-blue-600 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                  {product.categoryId}
+                </span>
+              </td>
+              <td className="py-4 px-6 text-sm font-medium">
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}
+              </td>
+              <td className="py-4 px-6">
+                <span className={`text-sm font-bold ${product.stockQuantity < 10 ? 'text-red-500' : 'text-slate-600'}`}>
+                  {product.stockQuantity} un
+                </span>
+              </td>
+              <td className="py-4 px-6 text-right">
+                <div className="flex justify-end gap-2">
+                  <button className="text-slate-400 hover:text-blue-600"><Edit size={18} /></button>
+                  <button className="text-slate-400 hover:text-red-600"><Trash2 size={18} /></button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
