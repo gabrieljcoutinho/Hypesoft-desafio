@@ -1,25 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom'; // ADICIONADO ISSO
 import App from './App';
-import './index.css';
 import keycloak from './services/keycloak';
 
 keycloak.init({
-  onLoad: 'login-required',
-  checkLoginIframe: false,
-  pkceMethod: 'S256' // Recomendado para evitar erros de segurança
+  onLoad: 'login-required', // Obriga o login antes de mostrar qualquer coisa
+  checkLoginIframe: false
 }).then((authenticated) => {
   if (authenticated) {
     ReactDOM.createRoot(document.getElementById('root')!).render(
       <React.StrictMode>
-        {/* O BrowserRouter deve abraçar o App */}
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+        <App />
       </React.StrictMode>
     );
   }
-}).catch(() => {
-  console.error("Erro ao autenticar no Keycloak");
+}).catch((error) => {
+  console.error("Erro na autenticação:", error);
 });
