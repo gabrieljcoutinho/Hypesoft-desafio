@@ -2,7 +2,7 @@ import { Sidebar } from './components/layouts/Sidebar.tsx';
 import { SummaryCard } from './components/ui/SummaryCard';
 import { ProductTable } from './components/ui/ProductTable';
 import { Package, DollarSign, AlertTriangle, Plus } from 'lucide-react';
-import { Product } from './types/product';
+import { Product } from '../src/types/product.ts';
 
 // Dados fictícios para teste
 const MOCK_PRODUCTS: Product[] = [
