@@ -125,5 +125,5 @@ export function ProductModal({ isOpen, onClose }: ProductModalProps) {
         </form>
       </div>
     </div>
-  );
+  );s
 }
