@@ -1,23 +1,29 @@
-import { useState } from 'react'; // Adicionado
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
+// Caminhos baseados na sua imagem src/pages/Products.tsx -> src/components/ui/
 import { ProductTable } from '../components/ui/ProductTable';
-import { ProductModal } from '../components/ui/ProductModal'; // Adicionado
+import { ProductModal } from '../components/ui/ProductModal';
 import { Product } from '../types/product';
 
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: '1',
-    name: 'Teclado Mecânico RGB',
-    description: 'Switch Blue, padrão ABNT2 com iluminação customizável.',
-    price: 350.00,
-    categoryId: 'c1',
-    category: { id: 'c1', name: 'Periféricos' },
-    stockQuantity: 15
-  }
-];
-
 export function ProductsPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false); // Adicionado
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('http://localhost:5169/api/Products');
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar produtos:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   return (
     <div>
@@ -26,9 +32,8 @@ export function ProductsPage() {
           <h2 className="text-3xl font-bold text-slate-800">Produtos</h2>
           <p className="text-slate-500">Gerencie seu catálogo de produtos.</p>
         </div>
-
         <button
-          onClick={() => setIsModalOpen(true)} // Adicionado
+          onClick={() => setIsModalOpen(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2"
         >
           <Plus size={20} />
@@ -36,12 +41,14 @@ export function ProductsPage() {
         </button>
       </header>
 
-      <ProductTable products={MOCK_PRODUCTS} />
+      <ProductTable products={products} />
 
-      {/* Adicionado o Modal no final */}
       <ProductModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          fetchProducts(); // Atualiza a lista quando fechar o modal
+        }}
       />
     </div>
   );
