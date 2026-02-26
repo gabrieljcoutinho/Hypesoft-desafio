@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
-// Caminhos baseados na sua imagem src/pages/Products.tsx -> src/components/ui/
 import { ProductTable } from '../components/ui/ProductTable';
 import { ProductModal } from '../components/ui/ProductModal';
 import { Product } from '../types/product';
@@ -19,6 +18,29 @@ export function ProductsPage() {
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
     }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Deseja realmente excluir este produto?")) {
+      try {
+        const response = await fetch(`http://localhost:5169/api/Products/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          fetchProducts();
+        } else {
+          alert("Erro ao excluir o produto.");
+        }
+      } catch (error) {
+        console.error("Erro ao deletar:", error);
+      }
+    }
+  };
+
+  const handleEdit = (product: Product) => {
+    console.log("Editar produto:", product);
+    // Por enquanto abre o log. Para editar de fato, o modal precisaria receber os dados.
   };
 
   useEffect(() => {
@@ -41,13 +63,17 @@ export function ProductsPage() {
         </button>
       </header>
 
-      <ProductTable products={products} />
+      <ProductTable
+        products={products}
+        onDelete={handleDelete}
+        onEdit={handleEdit}
+      />
 
       <ProductModal
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          fetchProducts(); // Atualiza a lista quando fechar o modal
+          fetchProducts();
         }}
       />
     </div>
