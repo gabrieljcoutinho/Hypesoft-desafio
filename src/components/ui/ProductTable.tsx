@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'; // Adicionado useEffect
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
+// Removi um ".." dos caminhos abaixo para eles apontarem para o lugar certo
 import { ProductTable } from '../components/ui/ProductTable';
 import { ProductModal } from '../components/ui/ProductModal';
 import { Product } from '../types/product';
-
 export function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Criamos um estado para os produtos reais (começa vazio)
