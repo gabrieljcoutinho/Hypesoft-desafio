@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, Package, DollarSign, AlertTriangle, X, Info, ChartPie } from 'lucide-react';
+import { Plus, Search, Package, DollarSign, AlertTriangle, X, ChartPie } from 'lucide-react';
 import {
   PieChart,
   Pie,
@@ -7,9 +7,11 @@ import {
   ResponsiveContainer,
   Tooltip
 } from 'recharts';
+
+// Ajuste nos caminhos de importação conforme sua estrutura de pastas
 import { ProductTable } from '../components/ui/ProductTable';
 import { ProductModal } from '../components/ui/ProductModal';
-import { Product } from '../types/productType';
+import { Product } from '../types/productType'; // Nome corrigido conforme image_50be84.png
 
 export function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,6 +20,7 @@ export function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLowStockModalOpen, setIsLowStockModalOpen] = useState(false);
 
+  // Busca os produtos da API .NET
   const fetchProducts = async () => {
     try {
       const response = await fetch('http://localhost:5169/api/Products');
@@ -30,6 +33,7 @@ export function ProductsPage() {
     }
   };
 
+  // Cálculos para o Dashboard
   const stats = useMemo(() => {
     const total = products.length;
     const value = products.reduce((acc, p) => acc + (p.price * p.stockQuantity), 0);
@@ -48,7 +52,6 @@ export function ProductsPage() {
     return { total, value, lowStockCount: lowStockItems.length, lowStockList: lowStockItems, chartData };
   }, [products]);
 
-  // Paleta de cores vibrantes e modernas
   const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981'];
 
   const filteredProducts = products.filter(product => {
@@ -108,7 +111,7 @@ export function ProductsPage() {
         </div>
       </div>
 
-      {/* 2. DASHBOARD DE MIX DE CATEGORIAS (REESTILIZADO) */}
+      {/* 2. DASHBOARD DE MIX DE CATEGORIAS */}
       <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-2 bg-slate-100 rounded-lg text-slate-600"><ChartPie size={20} /></div>
@@ -116,7 +119,6 @@ export function ProductsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Lado Esquerdo: O Gráfico Donut */}
           <div className="h-72 w-full relative">
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-4xl font-black text-slate-800 leading-none">{stats.total}</span>
@@ -161,7 +163,6 @@ export function ProductsPage() {
             </ResponsiveContainer>
           </div>
 
-          {/* Lado Direito: Legenda Customizada */}
           <div className="space-y-3">
             <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4">Distribuição</p>
             <div className="grid grid-cols-2 gap-3">
@@ -185,10 +186,6 @@ export function ProductsPage() {
           <h2 className="text-3xl font-black text-slate-800 tracking-tight">
             {searchTerm === 'estoque_baixo' ? 'Atenção ao Stock' : 'Inventário Geral'}
           </h2>
-          <div className="flex items-center gap-2 text-slate-500 mt-1">
-            <div className={`w-2 h-2 rounded-full ${searchTerm === 'estoque_baixo' ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`} />
-            <p className="text-sm font-medium">Status: {searchTerm === 'estoque_baixo' ? 'Mostrando críticos' : 'Em conformidade'}</p>
-          </div>
         </div>
 
         <div className="flex items-center gap-4">
@@ -213,35 +210,28 @@ export function ProductsPage() {
       {/* MODAL DE ESTOQUE BAIXO */}
       {isLowStockModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[70] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[40px] shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in duration-300">
+          <div className="bg-white rounded-[40px] shadow-2xl w-full max-w-xl overflow-hidden">
             <div className="p-8 bg-gradient-to-br from-rose-500 to-rose-600 flex justify-between items-center text-white">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm"><AlertTriangle size={32} /></div>
-                <div>
-                  <h3 className="text-2xl font-black italic tracking-tight">ALERTA CRÍTICO</h3>
-                  <p className="opacity-80 font-medium text-sm tracking-wide">Reposição imediata necessária</p>
-                </div>
+                <AlertTriangle size={32} />
+                <h3 className="text-2xl font-black italic">ALERTA CRÍTICO</h3>
               </div>
-              <button onClick={() => setIsLowStockModalOpen(false)} className="bg-black/10 hover:bg-black/20 p-3 rounded-full transition-colors"><X size={24} /></button>
+              <button onClick={() => setIsLowStockModalOpen(false)} className="bg-black/10 p-3 rounded-full"><X size={24} /></button>
             </div>
             <div className="p-8">
-              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-4 custom-scrollbar">
+              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-4">
                 {stats.lowStockList.map(product => (
-                  <div key={product.id} className="flex justify-between items-center p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-rose-200 transition-all">
+                  <div key={product.id} className="flex justify-between items-center p-6 bg-slate-50 rounded-3xl border border-slate-100">
                     <div>
-                      <p className="font-bold text-slate-900 text-lg leading-tight">{product.name}</p>
-                      <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{product.categoryId}</span>
+                      <p className="font-bold text-slate-900 text-lg">{product.name}</p>
+                      <span className="text-[10px] font-black text-indigo-500 uppercase">{product.categoryId}</span>
                     </div>
-                    <div className="text-center bg-rose-100 px-5 py-2 rounded-2xl border border-rose-200 min-w-[80px]">
+                    <div className="text-center bg-rose-100 px-5 py-2 rounded-2xl">
                       <span className="block text-2xl font-black text-rose-600">{product.stockQuantity}</span>
-                      <span className="text-[9px] font-black text-rose-400 uppercase tracking-tighter">Qtd</span>
                     </div>
                   </div>
                 ))}
               </div>
-              <button onClick={() => { setSearchTerm('estoque_baixo'); setIsLowStockModalOpen(false); }} className="w-full mt-8 bg-slate-900 text-white py-5 rounded-[24px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl active:scale-95">
-                Ver detalhes na tabela
-              </button>
             </div>
           </div>
         </div>
