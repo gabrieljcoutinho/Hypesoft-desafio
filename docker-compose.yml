@@ -1,0 +1,43 @@
+services:
+  # BANCO DE DADOS: MongoDB
+  mongodb:
+    image: mongo:latest
+    container_name: hypesoft-db
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongo-data:/data/db
+
+  # INTERFACE PARA O BANCO (Opcional, mas ajuda muito a ver os dados)
+  mongo-express:
+    image: mongo-express:latest
+    container_name: hypesoft-db-gui
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_URL=mongodb://admin:password@mongodb:27017/
+    depends_on:
+      - mongodb
+
+  # AUTENTICAÇÃO: Keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.0
+    container_name: hypesoft-auth
+    command: start-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+
+# VOLUMES: Garante que seus dados não sumam quando você desligar o PC
+volumes:
+  mongo-data:
+  keycloak-data:
