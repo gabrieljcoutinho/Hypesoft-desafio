@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import { ProductTable } from '../components/ui/ProductTable';
 import { ProductModal } from '../components/ui/ProductModal';
-import { Product } from '../types/product';
+import { Product } from '../types/productType';
 
 export function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
